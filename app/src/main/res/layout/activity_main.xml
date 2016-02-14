@@ -25,31 +25,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Correct"
-            android:id="@+id/radioButton"
-            android:checked="false"
-            android:layout_marginTop="56dp"
-            android:layout_below="@+id/textView2"
-            android:layout_alignLeft="@+id/radioButton2"
-            android:layout_alignStart="@+id/radioButton2" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Incorrect"
-            android:id="@+id/radioButton2"
-            android:checked="false"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
     </RadioGroup>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="LocationName"
         android:id="@+id/textView2"
         android:layout_alignTop="@+id/textView"
         android:layout_alignRight="@+id/editText"
@@ -71,6 +51,26 @@
         android:text="Find Current Location"
         android:id="@+id/button"
         android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Correct"
+        android:id="@+id/radioButton"
+        android:checked="false"
+        android:layout_marginTop="60dp"
+        android:layout_below="@+id/textView"
+        android:layout_alignLeft="@+id/radioButton2"
+        android:layout_alignStart="@+id/radioButton2" />
+
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Incorrect"
+        android:id="@+id/radioButton2"
+        android:checked="false"
+        android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
