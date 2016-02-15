@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +35,26 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup choices;
     private SignalServer signalServer;
     private List<ScanResult> aps = new ArrayList<>();
+    private int numberOfSignals;
+    private String currentSignalsJson;
+    private static final int MSG_FETCH_WIFI_STRENGTH = 123;
+
+    Handler H = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_FETCH_WIFI_STRENGTH:
+                    startScan();
+                    break;
+            }
+        }
+    };
+
+    private void startScan() {
+        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+        wifiManager.startScan();
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        setupWifiSignalReceivers();
     }
 
     private BroadcastReceiver wifiReceiver = new BroadcastReceiver() {
@@ -62,6 +85,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        unregisterReceivers();
+    }
+
+    private void unregisterReceivers() {
+        unregisterReceiver(wifiReceiver);
     }
 
     private void setUpViews() {
@@ -84,7 +112,8 @@ public class MainActivity extends AppCompatActivity {
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         aps = wifiManager.getScanResults();
         System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%aps: " + aps);
-        String currentSignals = "{\"aps\": \"" + aps + "\"}";
+        String currentSignals = new Gson().toJson("{\"aps\": \"" + aps + "\"}");
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$currentsignals: " + currentSignals);
         signalServer.fetchCurrentLocation(new TypedJsonString(currentSignals), new Callback<String>() {
             @Override
             public void success(String response, Response response2) {
@@ -99,18 +128,15 @@ public class MainActivity extends AppCompatActivity {
                 locationNameView.setText("Failed to fetch location");
             }
         });
-        unregisterReceiver(wifiReceiver);
     }
 
     private void getCurrentLocation() {
-        WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-        wifiManager.startScan();
-        setupWifiSignalReceivers();
+        H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
     }
 
     private SignalServer getSignalServer() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://192.168.0.30:9090")
+                .setEndpoint("http://10.132.124.51:9090")
                 .build();
         return restAdapter.create(SignalServer.class);
     }
