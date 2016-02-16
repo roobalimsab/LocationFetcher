@@ -13,6 +13,6 @@ import retrofit.http.Query;
 public interface SignalServer {
 
     @GET("/api/fetchCurrentLocation")
-    public void fetchCurrentLocation(@Query("currentSignal") ArrayList<TypedJsonString> signalJson, Callback<String[]> cb);
+    public void fetchCurrentLocation(@Query("currentSignal") ArrayList<TypedJsonString> signalJson, Callback<String> cb);
 
 }
