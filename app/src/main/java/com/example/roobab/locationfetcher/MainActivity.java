@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup choices;
     private SignalServer signalServer;
     private List<ScanResult> aps = new ArrayList<>();
-    private ArrayList<TypedJsonString> apsArray = new ArrayList<>();
+    private ArrayList<List<ScanResult>> apsArray = new ArrayList<>();
     private int numberOfSignals;
     private static final int MSG_FETCH_WIFI_STRENGTH = 123;
 
@@ -114,13 +114,18 @@ public class MainActivity extends AppCompatActivity {
         numberOfSignals++;
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         aps = wifiManager.getScanResults();
-        String currentSignals = new Gson().toJson("{\"aps\": \"" + aps + "\"}");
-        TypedJsonString signalJson = new TypedJsonString(currentSignals);
-        apsArray.add(signalJson);
-        if(numberOfSignals < 25) {
+        List<ScanResult> filteredAps = new ArrayList<>();
+        for(ScanResult ap : aps) {
+            if(ap.SSID.equals("twguest")) {
+                filteredAps.add(ap);
+            }
+        }
+        apsArray.add(filteredAps);
+        if(numberOfSignals < 15) {
             H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
         } else {
             System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%% in going to fetch current location");
+            System.out.println("apsArray: " + apsArray);
             signalServer.fetchCurrentLocation(apsArray, new Callback<String>() {
                 @Override
                 public void success(String response, Response response2) {
@@ -144,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SignalServer getSignalServer() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://192.168.0.35:9090")
+                .setEndpoint("http://10.132.124.20:9090")
                 .build();
         return restAdapter.create(SignalServer.class);
     }
