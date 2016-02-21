@@ -117,15 +117,15 @@ public class MainActivity extends AppCompatActivity {
         String currentSignals = new Gson().toJson("{\"aps\": \"" + aps + "\"}");
         TypedJsonString signalJson = new TypedJsonString(currentSignals);
         apsArray.add(signalJson);
-        if(numberOfSignals < 25) {
+        if(numberOfSignals < 5) {
             H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
         } else {
-            System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%% in going to fetch current location");
-            signalServer.fetchCurrentLocation(apsArray, new Callback<String>() {
+            signalServer.fetchCurrentLocation(apsArray, new Callback<String[]>() {
                 @Override
-                public void success(String response, Response response2) {
+                public void success(String[] response, Response response2) {
                     System.out.println("Fetch Success: " + response);
-                    locationNameView.setText(response);
+                    String finalResponse = getTheAccurateLocation(response);
+                    locationNameView.setText(finalResponse);
                     aps.clear();
                 }
 
@@ -138,13 +138,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private String getTheAccurateLocation(String[] response) {
+        int count = 1, tempCount;
+        String accurateLocation = response[0];
+        String temp = "";
+
+        for(int i = 0; i < response.length; i++) {
+            temp = response[i];
+            tempCount = 0;
+            for(int j = 0; j < response.length; j++) {
+                if(temp == response[j]) {
+                    tempCount++;
+                }
+            }
+            if(tempCount > count) {
+                accurateLocation = temp;
+                count = tempCount;
+            }
+        }
+        return accurateLocation;
+    }
+
     private void getCurrentLocation() {
         H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
     }
 
     private SignalServer getSignalServer() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://192.168.0.35:9090")
+                .setEndpoint("http://192.168.0.33:9090")
                 .build();
         return restAdapter.create(SignalServer.class);
     }
