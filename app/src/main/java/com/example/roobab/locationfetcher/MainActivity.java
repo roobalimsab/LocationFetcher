@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup choices;
     private SignalServer signalServer;
     private List<ScanResult> aps = new ArrayList<>();
-    private ArrayList<TypedJsonString> apsArray = new ArrayList<>();
     private int numberOfSignals;
+    private String currentSignalsJson;
     private static final int MSG_FETCH_WIFI_STRENGTH = 123;
 
     Handler H = new Handler() {
@@ -102,8 +102,6 @@ public class MainActivity extends AppCompatActivity {
         findLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                numberOfSignals = 0;
-                apsArray.clear();
                 locationNameView.setText("Pending");
                 getCurrentLocation();
             }
@@ -111,52 +109,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readSignalStrength() {
-        numberOfSignals++;
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         aps = wifiManager.getScanResults();
+        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%aps: " + aps);
         String currentSignals = new Gson().toJson("{\"aps\": \"" + aps + "\"}");
-        TypedJsonString signalJson = new TypedJsonString(currentSignals);
-        apsArray.add(signalJson);
-        if(numberOfSignals < 5) {
-            H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
-        } else {
-            signalServer.fetchCurrentLocation(apsArray, new Callback<String[]>() {
-                @Override
-                public void success(String[] response, Response response2) {
-                    System.out.println("Fetch Success: " + response);
-                    String finalResponse = getTheAccurateLocation(response);
-                    locationNameView.setText(finalResponse);
-                    aps.clear();
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    System.out.println("Fetch Error: " + error);
-                    locationNameView.setText("Failed to fetch location");
-                }
-            });
-        }
-    }
-
-    private String getTheAccurateLocation(String[] response) {
-        int count = 1, tempCount;
-        String accurateLocation = response[0];
-        String temp = "";
-
-        for(int i = 0; i < response.length; i++) {
-            temp = response[i];
-            tempCount = 0;
-            for(int j = 0; j < response.length; j++) {
-                if(temp == response[j]) {
-                    tempCount++;
-                }
+        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$currentsignals: " + currentSignals);
+        signalServer.fetchCurrentLocation(new TypedJsonString(currentSignals), new Callback<String>() {
+            @Override
+            public void success(String response, Response response2) {
+                System.out.println("Fetch Success: " + response);
+                locationNameView.setText(response);
+                aps.clear();
             }
-            if(tempCount > count) {
-                accurateLocation = temp;
-                count = tempCount;
+
+            @Override
+            public void failure(RetrofitError error) {
+                System.out.println("Fetch Error: " + error);
+                locationNameView.setText("Failed to fetch location");
             }
-        }
-        return accurateLocation;
+        });
     }
 
     private void getCurrentLocation() {
@@ -165,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SignalServer getSignalServer() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://192.168.0.33:9090")
+                .setEndpoint("http://10.132.124.51:9090")
                 .build();
         return restAdapter.create(SignalServer.class);
     }
