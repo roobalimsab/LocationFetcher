@@ -35,8 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup choices;
     private SignalServer signalServer;
     private List<ScanResult> aps = new ArrayList<>();
-    private int numberOfSignals;
-    private String currentSignalsJson;
     private static final int MSG_FETCH_WIFI_STRENGTH = 123;
 
     Handler H = new Handler() {
@@ -111,10 +109,13 @@ public class MainActivity extends AppCompatActivity {
     private void readSignalStrength() {
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         aps = wifiManager.getScanResults();
-        System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%aps: " + aps);
-        String currentSignals = new Gson().toJson("{\"aps\": \"" + aps + "\"}");
-        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$currentsignals: " + currentSignals);
-        signalServer.fetchCurrentLocation(new TypedJsonString(currentSignals), new Callback<String>() {
+        List<ScanResult> filteredAps = new ArrayList<>();
+        for(ScanResult ap : aps) {
+//            if(ap.SSID.equals("twguest")) {
+            filteredAps.add(ap);
+//            }
+        }
+        signalServer.fetchCurrentLocation(filteredAps, new Callback<String>() {
             @Override
             public void success(String response, Response response2) {
                 System.out.println("Fetch Success: " + response);
