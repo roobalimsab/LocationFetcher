@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private void startScan() {
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         wifiManager.startScan();
+        setupWifiSignalReceivers();
     }
 
 
@@ -65,13 +66,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setupWifiSignalReceivers();
     }
 
     private BroadcastReceiver wifiReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^in on receive of wifi signals");
             readSignalStrength();
         }
     };
@@ -83,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceivers();
     }
 
     private void unregisterReceivers() {
@@ -129,15 +127,16 @@ public class MainActivity extends AppCompatActivity {
                 locationNameView.setText("Failed to fetch location");
             }
         });
+        unregisterReceivers();
     }
 
     private void getCurrentLocation() {
-        H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
+        H.sendEmptyMessageDelayed(MSG_FETCH_WIFI_STRENGTH, 15000);
     }
 
     private SignalServer getSignalServer() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://10.132.124.51:9090")
+                .setEndpoint("http://192.168.0.25:9090")
                 .build();
         return restAdapter.create(SignalServer.class);
     }
