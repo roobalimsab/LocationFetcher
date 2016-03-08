@@ -24,8 +24,6 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
-import static android.net.wifi.WifiManager.RSSI_CHANGED_ACTION;
 import static android.net.wifi.WifiManager.SCAN_RESULTS_AVAILABLE_ACTION;
 
 public class MainActivity extends AppCompatActivity {
@@ -107,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
     private void readSignalStrength() {
         WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         aps = wifiManager.getScanResults();
-        List<ScanResult> filteredAps = new ArrayList<>();
+        List<ParsedSignal> apsOfConcern = new ArrayList<>();
         for(ScanResult ap : aps) {
 //            if(ap.SSID.equals("twguest")) {
-            filteredAps.add(ap);
+            apsOfConcern.add(new ParsedSignal(ap.BSSID, ap.level));
 //            }
         }
-        signalServer.fetchCurrentLocation(filteredAps, new Callback<String>() {
+        signalServer.fetchCurrentLocation(new Gson().toJson(apsOfConcern), new Callback<String>() {
             @Override
             public void success(String response, Response response2) {
                 System.out.println("Fetch Success: " + response);
@@ -131,12 +129,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getCurrentLocation() {
-        H.sendEmptyMessageDelayed(MSG_FETCH_WIFI_STRENGTH, 15000);
+        H.sendEmptyMessage(MSG_FETCH_WIFI_STRENGTH);
     }
 
     private SignalServer getSignalServer() {
         RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint("http://192.168.0.25:9090")
+                .setEndpoint("http://192.168.0.29:9090")
                 .build();
         return restAdapter.create(SignalServer.class);
     }
